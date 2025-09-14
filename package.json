@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "worker:dev": "tsx watch src/worker/index.ts",
+    "worker:prod": "tsx src/worker/index.ts",
+    "worker:build": "tsc --project src/worker/tsconfig.json",
+    "worker:start": "node dist/worker/index.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.787.0",
@@ -59,6 +63,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "tailwindcss": "^4",
+    "tsx": "^4.20.5",
     "tw-animate-css": "^1.3.8",
     "typescript": "^5"
   }

@@ -301,6 +301,11 @@ class PerformanceMonitor {
     }
     this.redis.disconnect();
   }
+
+  // Shutdown alias for destroy
+  async shutdown() {
+    this.destroy();
+  }
 }
 
 export const performanceMonitor = new PerformanceMonitor();

@@ -1,10 +1,10 @@
 "use server"
 
-import { decreaseCredits } from "@/lib/decrease-credit"
-import { prisma } from "@/lib/prisma"
-import { videoQueue } from "@/lib/queue"
-import { auth, currentUser } from "@clerk/nextjs/server"
-import { randomUUID } from "crypto"
+import { decreaseCredits } from "@/lib/decrease-credit";
+import { prisma } from "@/lib/prisma";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { videoQueue } from "@/lib/queue";
+import { randomUUID } from "crypto";
 
 export interface VideoConfig {
   duration: '15' | '30' | '60'

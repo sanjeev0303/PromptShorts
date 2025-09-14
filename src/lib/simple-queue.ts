@@ -20,7 +20,7 @@ export const createRedisConnection = () => {
     connection.on("connect", () => console.log("✅ Redis connected"))
     connection.on("ready", () => console.log("🚀 Redis ready"))
     connection.on("error", (error) => console.error("❌ Redis error:", error.message))
-    
+
     return connection
 }
 

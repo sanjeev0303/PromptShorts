@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
-import "@/lib/worker-init"; // Initialize worker on server start
 
 export const metadata: Metadata = {
   title: "AI Shorts",
