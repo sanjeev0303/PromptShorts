@@ -7,10 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "worker:dev": "tsx watch src/worker/index.ts",
-    "worker:prod": "tsx src/worker/index.ts",
-    "worker:build": "tsc --project src/worker/tsconfig.json",
-    "worker:start": "node dist/worker/index.js"
+    "worker": "tsx src/worker/index.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.787.0",
