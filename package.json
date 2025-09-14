@@ -10,8 +10,6 @@
     "worker": "prisma generate && tsx src/worker/index.ts",
     "deploy": "next start",
     "postinstall": "prisma generate",
-    "db:deploy": "prisma migrate deploy",
-    "db:reset": "prisma migrate reset --force",
     "db:push": "prisma db push"
   },
   "dependencies": {
