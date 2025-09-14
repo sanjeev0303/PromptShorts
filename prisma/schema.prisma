@@ -1,0 +1,204 @@
+// Enhanced Prisma Schema with performance optimizations and better error tracking
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  userId    String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  videos    Video[]
+  credits   Int      @default(1)
+
+  // Usage tracking
+  totalVideosGenerated    Int @default(0)
+  lastVideoGeneratedAt    DateTime?
+  subscriptionStatus      String? // free, pro, enterprise
+  subscriptionExpiresAt   DateTime?
+
+  @@map("user")
+  @@index([email])
+  @@index([subscriptionStatus])
+  UserSession UserSession[]
+}
+
+model Video {
+  videoId      String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Basic video info
+  prompt       String
+  title        String?  // Auto-generated title from prompt
+  description  String?  // Auto-generated description
+
+  // Processing status
+  processing   Boolean  @default(true)
+  failed       Boolean  @default(false)
+  completed    Boolean  @default(false)
+
+  // Processing metadata
+  processingStartedAt  DateTime?
+  processingCompletedAt DateTime?
+  processingDuration   Int?      // Duration in milliseconds
+  failureReason        String?   // Specific error message
+  retryCount          Int       @default(0)
+  lastProcessingStep  String?   // Last completed step
+
+  // Content data
+  content      String?   // Combined narration text
+  imagePrompts String[]  // Array of image generation prompts
+  imageLinks   String[]  // Array of generated image URLs
+  audio        String?   // Audio file URL
+  videoUrl     String?   // Final video URL
+  thumbnail    String?   // Thumbnail image URL
+
+  // Video metadata
+  captions     Json?     // Caption data with timing
+  duration     Int?      // Video duration in frames
+  frameRate    Int       @default(30)
+  resolution   String    @default("1080x1920") // 9:16 aspect ratio
+
+  // Analytics
+  viewCount    Int       @default(0)
+  shareCount   Int       @default(0)
+  downloadCount Int      @default(0)
+  lastViewedAt DateTime?
+
+  // Resource usage tracking
+  imageGenerationCost   Float?  // Cost in credits/dollars
+  audioGenerationCost   Float?
+  videoRenderingCost    Float?
+  totalCost            Float?
+
+  // User relation
+  userId       String
+  user         User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("video")
+  @@index([userId])
+  @@index([processing])
+  @@index([failed])
+  @@index([completed])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([processing, createdAt]) // For cleanup queries
+}
+
+model ProcessingJob {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  videoId      String   @unique
+  jobId        String?  // BullMQ job ID
+  status       String   // pending, running, completed, failed
+  progress     Int      @default(0)
+
+  // Processing steps tracking
+  steps        Json?    // Detailed step progress
+  currentStep  String?
+
+  // Performance metrics
+  startTime    DateTime?
+  endTime      DateTime?
+  duration     Int?     // Processing time in milliseconds
+
+  // Resource usage
+  memoryUsage  Float?   // Peak memory usage in MB
+  cpuTime      Float?   // CPU time in seconds
+
+  // Error tracking
+  errorMessage String?
+  errorStack   String?
+  errorStep    String?
+
+  @@map("processing_job")
+  @@index([videoId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SystemMetrics {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+
+  // Queue metrics
+  queueLength Int
+  activeJobs  Int
+  failedJobs  Int
+
+  // Performance metrics
+  avgProcessingTime Float? // Average processing time in minutes
+  successRate       Float? // Success rate percentage
+
+  // Resource usage
+  memoryUsage       Float?
+  cpuUsage          Float?
+  diskUsage         Float?
+
+  // API usage
+  groqApiCalls      Int?
+  replicateApiCalls Int?
+  elevenLabsCalls   Int?
+  assemblyAiCalls   Int?
+
+  @@map("system_metrics")
+  @@index([timestamp])
+}
+
+model ApiUsage {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  videoId   String
+  userId    String
+
+  service   String   // groq, replicate, elevenlabs, assemblyai, remotion
+  operation String   // script_generation, image_generation, etc.
+  cost      Float?   // Cost in credits or dollars
+  duration  Int?     // API call duration in milliseconds
+  success   Boolean  @default(true)
+
+  // API response metadata
+  tokensUsed    Int?
+  charactersUsed Int?
+  imagesGenerated Int?
+  audioDuration   Float?
+
+  @@map("api_usage")
+  @@index([videoId])
+  @@index([userId])
+  @@index([service])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+model UserSession {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  sessionData Json?   // Store session-specific data
+  ipAddress   String?
+  userAgent   String?
+
+  @@map("user_session")
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Add this relation to User model (you'll need to add this line to User model above)
+// sessions  UserSession[]
